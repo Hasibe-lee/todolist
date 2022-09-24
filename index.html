@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <link rel="stylesheet" href="./css/reset.css">
+  <link rel="stylesheet" href="./css/index.css">
+</head>
+
+<body>
+  <div id="app">
+    <div class="container">
+      <div class="header">
+        <img src="./img/note.svg">
+        <div class="title-h">To-Do List</div>
+      </div>
+      <div class="section">
+        <h1 class="title">~ Today I need to ~</h1>
+        <form class="form">
+          <input type="text" placeholder="添加新的ToDo" v-model.trim="str">
+          <button class="submit" @click.prevent="submit">
+            <i></i><span>Submit</span>
+          </button>
+        </form>
+      </div>
+      <!-- 待做列表 -->
+      <div class="list">
+        <transition-group tag="ul" name="todo">
+          <li class="list-item" :class="{active:item.state}" v-for="item in replaceList" :key="item.id">
+            <label>
+              <input type="checkbox" @change="changeState(item.id,$event)" v-model="item.state"><span
+                :title="item.content">{{item.content}}</span>
+            </label>
+            <i @click="deleteTodoById(item.id)">X</i>
+          </li>
+        </transition-group>
+      </div>
+
+
+      <!-- 选项值 -->
+      <div class="options">
+        <span>{{undoneCount}}待做</span>
+        <div class="filters">
+          <span @click="filtersList('all')">全部</span>
+          <span @click="filtersList(0)">未完成</span>
+          <span @click="filtersList(1)">完成</span>
+        </div>
+        <span @click="clearFinished">清空完成项</span>
+      </div>
+    </div>
+  </div>
+  <script>
+    let option = {
+      data: {
+        toDoList: [],
+        replaceList: [],
+        str: '',
+        nextId: 0
+      },
+      methods: {
+        // 添加一条新的ToDo
+        submit(e) {
+          e.target.parentElement.style.transform = 'translateX(6px) rotate(0deg)'
+          e.target.previousSibling.style.transform = 'scaleY(0.5)'
+          e.target.parentElement.ontransitionend = function () {
+            this.style.transform = 'translateX(6px) rotate(6deg)'
+            e.target.previousSibling.style.transform = 'scaleY(1.1)'
+          }
+          if (this.str === '') {
+            return console.log('不能为空')
+          }
+          this.replaceList = [...this.replaceList, {
+            id: this.nextId++,
+            state: false,
+            content: this.str,
+          }]
+          this.str = ''
+          this.toDoList = this.replaceList
+        },
+
+        // 删除一条todo
+        deleteTodoById(id) {
+          this.replaceList = this.replaceList.filter(item => item.id !== id)
+        },
+
+        // 复选框状态改变时的操作
+        changeState(id, e) {
+          let state = e.target.checked
+          let parentElement = e.target.parentElement.parentElement;
+          if (state) {
+            parentElement.classList.add('active')
+            this.findElement(id, state)
+          } else {
+            parentElement.classList.remove('active')
+            this.findElement(id, state)
+          }
+        },
+
+        // 改变相应Id的项的完成状态
+        findElement(id, state) {
+          this.replaceList.find((item) => {
+            if (item.id === id) {
+              return item.state = state
+            }
+          })
+        },
+
+        // 根据条件过滤出完成，未完成，全部
+        // 1:完成
+        // 0:未完成
+        // all:全部
+        filtersList(params) {
+          if (params === 'all') {
+            this.replaceList = this.toDoList.filter(item => item)
+          }
+          else if (params === 1) {
+            this.replaceList = this.toDoList.filter((item) => item.state)
+          }
+          else {
+            this.replaceList = this.toDoList.filter((item) => !item.state)
+          }
+        },
+        // 清除已完成的项
+        clearFinished() {
+          this.replaceList = this.replaceList.filter((item) => !item.state)
+          this.toDoList = this.replaceList
+        }
+      },
+      computed: {
+        undoneCount() {
+          return this.replaceList.filter((item) => {
+            return !item.state
+          }).length
+        }
+      }
+    }
+
+    const vm = new Vue(option)
+    vm.$mount('#app')
+  </script>
+</body>
+
+</html>
