@@ -1,6 +1,17 @@
 body {
   background-image: linear-gradient(90deg, #ffafbd, #ffc3a0); }
 
+@keyframes rotateListItem {
+  0% {
+    transform: rotateX(90deg); }
+  25% {
+    transform: rotateX(0deg); }
+  50% {
+    transform: rotateX(-30deg); }
+  75% {
+    transform: rotateX(30deg); }
+  100% {
+    transform: rotateX(0deg); } }
 #app {
   position: relative;
   width: 100%; }
@@ -29,9 +40,9 @@ body {
     .container .header .title-h {
       margin-left: 10px;
       width: 100px;
-      height: 35px;
+      height: 40px;
       transform: rotate(5deg);
-      line-height: 35px;
+      line-height: 40px;
       text-align: center;
       color: #fff;
       background-color: #fe7345;
@@ -56,7 +67,7 @@ body {
       .container .section .form .submit {
         position: relative;
         padding: 0;
-        transform: translateX(6px) rotate(6deg);
+        transform: translate(6px, 0) rotate(6deg);
         border-radius: 6px;
         outline: none;
         border: none;
@@ -76,7 +87,7 @@ body {
           transform-origin: top;
           background-image: url(../img/1.png);
           background-color: #fe7345;
-          transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+          transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .container .section .form .submit span {
           position: relative;
           display: block;
@@ -92,10 +103,15 @@ body {
       align-items: center;
       margin-top: 10px;
       width: 100%;
-      transition: all .25s linear; }
+      transition: all .25s linear;
+      perspective: 800px; }
       .container .list .list-item.active {
+        position: relative;
+        border-radius: 3px;
         color: #fff;
-        background-color: #fe7345; }
+        background-color: #fe7345;
+        transform-style: preserve-3d;
+        animation: rotateListItem .5s linear forwards; }
         .container .list .list-item.active span {
           text-decoration: line-through; }
       .container .list .list-item label {
@@ -129,6 +145,11 @@ body {
       cursor: pointer;
       text-align: center;
       padding: 3px; }
+      .container .options .filters span.active {
+        position: relative;
+        color: #fff;
+        background-color: #fe7345;
+        border-radius: 3px; }
       .container .options .filters span:hover {
         border-radius: 3px;
         color: #fff;

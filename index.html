@@ -45,9 +45,9 @@
       <div class="options">
         <span>{{undoneCount}}待做</span>
         <div class="filters">
-          <span @click="filtersList('all')">全部</span>
-          <span @click="filtersList(0)">未完成</span>
-          <span @click="filtersList(1)">完成</span>
+          <span @click="filtersList('all')" :class="{active:isShow==='all'}">全部</span>
+          <span @click="filtersList(0)" :class="{active:isShow===0}">未完成</span>
+          <span @click="filtersList(1)" :class="{active:isShow===1}">完成</span>
         </div>
         <span @click="clearFinished">清空完成项</span>
       </div>
@@ -56,35 +56,39 @@
   <script>
     let option = {
       data: {
+        idArr: [],
         toDoList: [],
         replaceList: [],
         str: '',
-        nextId: 0
+        isShow: 'all'
       },
       methods: {
         // 添加一条新的ToDo
         submit(e) {
-          e.target.parentElement.style.transform = 'translateX(6px) rotate(0deg)'
+          e.target.parentElement.style.transform = 'translate(6px,4px) rotate(0deg)'
           e.target.previousSibling.style.transform = 'scaleY(0.5)'
           e.target.parentElement.ontransitionend = function () {
-            this.style.transform = 'translateX(6px) rotate(6deg)'
+            this.style.transform = 'translate(6px,0) rotate(6deg)'
             e.target.previousSibling.style.transform = 'scaleY(1.1)'
           }
           if (this.str === '') {
             return console.log('不能为空')
           }
-          this.replaceList = [...this.replaceList, {
-            id: this.nextId++,
+          let item = {
+            id: this.getId,
             state: false,
             content: this.str,
-          }]
+          }
+          this.replaceList = [...this.replaceList, item]
           this.str = ''
           this.toDoList = this.replaceList
+          this.setLocalStorage(item)
         },
 
         // 删除一条todo
         deleteTodoById(id) {
           this.replaceList = this.replaceList.filter(item => item.id !== id)
+          this.setLocalStorage()
         },
 
         // 复选框状态改变时的操作
@@ -98,6 +102,7 @@
             parentElement.classList.remove('active')
             this.findElement(id, state)
           }
+          this.setLocalStorage()
         },
 
         // 改变相应Id的项的完成状态
@@ -116,25 +121,64 @@
         filtersList(params) {
           if (params === 'all') {
             this.replaceList = this.toDoList.filter(item => item)
+            this.isShow = 'all'
           }
           else if (params === 1) {
             this.replaceList = this.toDoList.filter((item) => item.state)
+            this.isShow = 1
           }
           else {
             this.replaceList = this.toDoList.filter((item) => !item.state)
+            this.isShow = 0
           }
         },
         // 清除已完成的项
         clearFinished() {
-          this.replaceList = this.replaceList.filter((item) => !item.state)
-          this.toDoList = this.replaceList
+          if (this.isShow === 0) return
+          this.toDoList = this.toDoList.filter((item) => !item.state)
+          this.replaceList = this.toDoList
+          this.isShow = 'all'
+          localStorage.setItem('toDoList', JSON.stringify(this.toDoList))
+        },
+
+        setLocalStorage() {
+          let list = JSON.parse(localStorage.toDoList || '[]')
+          list = this.replaceList
+          localStorage.setItem('toDoList', JSON.stringify(list))
         }
       },
+      created() {
+        this.replaceList = JSON.parse(localStorage.toDoList || '[]')
+        this.toDoList = this.replaceList
+        this.replaceList.forEach((item) => {
+          while (this.idArr.indexOf(item.id) == -1) {
+            this.idArr.push(item.id)
+          }
+        })
+      },
+
       computed: {
         undoneCount() {
           return this.replaceList.filter((item) => {
             return !item.state
           }).length
+        },
+        undoneCount() {
+          return this.replaceList.filter((item) => {
+            return !item.state
+          }).length
+        },
+        getId() {
+          let num = Math.ceil(1000 * Math.random())
+          while (this.idArr.indexOf(num) !== -1) {
+            num = Math.ceil(1000 * Math.random())
+          }
+          if (this.idArr.length == this.toDoList.length) {
+            this.idArr.push(num)
+          } else if (this.idArr.length < this.toDoList.length) {
+            this.idArr.push(num)
+          }
+          return num
         }
       }
     }
